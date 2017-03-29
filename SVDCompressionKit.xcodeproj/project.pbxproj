@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		418F41891E8B655C00A1FE08 /* SVDCompressionKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		418F41901E8B656D00A1FE08 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418F418F1E8B656D00A1FE08 /* Matrix.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		418F41841E8B655C00A1FE08 /* SVDCompressionKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SVDCompressionKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SVDCompressionKit.h; sourceTree = "<group>"; };
 		418F41881E8B655C00A1FE08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		418F418F1E8B656D00A1FE08 /* Matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */,
+				418F418F1E8B656D00A1FE08 /* Matrix.swift */,
 				418F41881E8B655C00A1FE08 /* Info.plist */,
 			);
 			path = SVDCompressionKit;
@@ -95,6 +98,7 @@
 				TargetAttributes = {
 					418F41831E8B655C00A1FE08 = {
 						CreatedOnToolsVersion = 8.2;
+						LastSwiftMigration = 0820;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -131,6 +135,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				418F41901E8B656D00A1FE08 /* Matrix.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +244,7 @@
 		418F418D1E8B655C00A1FE08 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -250,6 +256,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = me.dumenci.SVDCompressionKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -257,6 +264,7 @@
 		418F418E1E8B655C00A1FE08 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -291,6 +299,7 @@
 				418F418E1E8B655C00A1FE08 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
