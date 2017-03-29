@@ -7,11 +7,15 @@
 //
 
 import Foundation
+import Accelerate
 
-public typealias Vector8 = [Int8]
+public typealias SVD = (U: Matrix<Double>,
+                        Σ: Matrix<Double>,
+                        VT: Matrix<Double>)
+public typealias Vector<T> = [T]
 
 private func grayscale8BitContext(width: Int, height: Int,
-                                        data: UnsafeMutableRawPointer)
+                                  data: UnsafeMutableRawPointer)
     -> CGContext? {
     // Creates a 8-bit per pixel, grayscale image context
     let grayColorSpace = CGColorSpaceCreateDeviceGray()
@@ -23,19 +27,148 @@ private func grayscale8BitContext(width: Int, height: Int,
     return context
 }
 
-public struct Matrix {
-    var rows: [Vector8]
-    
-    var width: Int {
-        return (rows.count > 0) ? rows[0].count : 0
+private func multiplyDoubleMatrices(underlyingVectorA: Vector<Double>,
+                                    underlyingVectorB: Vector<Double>,
+                                    sizeA: Size,
+                                    sizeB: Size) -> (Vector<Double>, Size)? {
+    if sizeA.width != sizeB.height {
+        return nil
     }
+    
+    let order = CblasRowMajor
+    let transposeOpt = CblasNoTrans
+    let height = Int32(sizeA.height)
+    let width = Int32(sizeB.width)
+    let overlappingDimension = Int32(sizeA.width)
+    let scalingFactor: Double = 1
+    
+    let dimLeft = Int32(sizeA.height)
+    let dimRight = Int32(sizeB.height)
+    let dimResult = Int32(sizeA.height)
+    
+    let resultLength = Int(height) * Int(width)
+    var result: [Double] = [Double](repeating: 0, count: resultLength)
+    
+    cblas_dgemm(order, transposeOpt, transposeOpt, height, width,
+                overlappingDimension, scalingFactor, underlyingVectorA,
+                dimLeft, underlyingVectorB, dimRight, scalingFactor, &result,
+                dimResult)
+    
+    return (result, Size(height: Int(height), width: Int(width)))
+}
 
-    var height: Int {
-        return rows.count
+private func singularValueDecomposition(underlyingVector: Vector<Double>,
+                                        size: Size) -> SVD {
+    // Return all columns of U and all rows of V^T
+    var jobz = "A".utf8CString[0]
+    var height = __CLPK_integer(size.height)
+    var width = __CLPK_integer(size.width)
+    var dimA = height
+    var dimU = height
+    let dimΣ = height
+    var dimVT = width
+    
+    // Data
+    var underlyingVector = underlyingVector
+    var U = [Double](repeating: 0, count: Int(dimU) * Int(dimU))
+    var Σ = [Double](repeating: 0, count: Int(dimU) * Int(dimVT))
+    var VT = [Double](repeating: 0, count: Int(dimVT) * Int(dimVT))
+    
+    var info: __CLPK_integer = 0
+    // I believe this is an internal array that `dgesdd` uses in its
+    // internal algorithm--its minimum size is defined as 8 * min(m, n)
+    var iwork = [__CLPK_integer](repeating: 0,
+                                 count: 8 * min(size.height, size.width))
+    var workopt: Double = 0
+    var lwork: __CLPK_integer = -1
+    
+    // First run to get optimal lwork size
+    dgesdd_(&jobz, &height, &width, &underlyingVector, &dimA, &Σ, &U,
+            &dimU, &VT, &dimVT, &workopt, &lwork, &iwork, &info)
+    
+    // Second run to actually compute the SVD
+    lwork = __CLPK_integer(workopt)
+    var work = [Double](repeating: 0, count: Int(lwork))
+    dgesdd_(&jobz, &height, &width, &underlyingVector, &dimA, &Σ, &U,
+            &dimU, &VT, &dimVT, &work, &lwork, &iwork, &info)
+    
+    if info > 0 {
+        fatalError("The SVD algorithm failed to converge.")
     }
     
-    init(rows: [Vector8]) {
-        self.rows = rows
+    let matrixU = Matrix(vec: U,
+                         size: Size(height: Int(dimΣ), width: Int(dimU)))
+    let matrixΣ = Matrix(vec: Σ,
+                         size: Size(height: Int(dimVT), width: Int(dimΣ)))
+    let matrixVT = Matrix(vec: VT,
+                          size: Size(height: Int(dimVT), width: Int(dimVT)))
+    
+    return (U: matrixU, Σ: matrixΣ, VT: matrixVT)
+}
+
+public struct Size {
+    let height: Int
+    let width: Int
+    
+    init(height: Int, width: Int) {
+        self.height = height
+        self.width = width
+    }
+}
+
+public protocol MatrixProtocol {
+    associatedtype DT
+    
+    var underlyingVector: Vector<DT> { get set }
+    var size: Size { get set }
+    
+    init()
+}
+
+public struct Matrix<T>: MatrixProtocol {
+    public typealias DT = T
+    
+    public var underlyingVector: Vector<T>
+    public var size: Size
+
+    public var rows: [Vector<T>] {
+        var rows: [Vector<T>] = []
+        
+        for (idx, el) in underlyingVector.enumerated() {
+            let row = Int(idx / size.width)
+            let col = idx % size.width
+            
+            if !rows.indices.contains(row) {
+                rows.insert([], at: row)
+            }
+            
+            rows[row].insert(el, at: col)
+        }
+        
+        return rows
+    }
+    
+    public init() {
+        self.init(vec: [], size: Size(height: 0, width: 0))
+    }
+    
+    public init(vec: Vector<T>, size: Size) {
+        self.underlyingVector = vec
+        self.size = size
+    }
+}
+
+extension Matrix: CustomStringConvertible {
+    public var description: String {
+        var descriptionString = "\(size.height) * \(size.width)\n"
+        for row in rows {
+            let rowDescription = row.map() { String(describing: $0) }
+                                .joined(separator: " ")
+            
+            descriptionString += "|" + rowDescription + "|\n"
+        }
+        
+        return descriptionString
     }
 }
 
@@ -43,47 +176,33 @@ public struct Matrix {
     Loading a `Matrix` with the grayscale representation of an `UIImage`, and
     creating a greyscale `UIImage` representation from a `Matrix`.
  */
-public extension Matrix {
+public extension MatrixProtocol where DT == Int8 {
     init(image: UIImage) {
+        self.init()
+        
         let cgImage = image.cgImage!
         
-        let width = Int(image.size.width)
-        let height = Int(image.size.height)
+        size = Size(height: Int(image.size.height),
+                    width: Int(image.size.width))
         
-        var data = Vector8(repeating: 0, count: width * height)
+        var data = Vector<Int8>(repeating: 0, count: size.height * size.width)
         
-        let context = grayscale8BitContext(width: width,
-                                           height: height,
+        let context = grayscale8BitContext(width: size.width,
+                                           height: size.height,
                                            data: &data)
-
+        
         context?.draw(cgImage, in: CGRect(x: 0, y: 0,
-                                          width: width,
-                                          height: height))
+                                          width: size.width,
+                                          height: size.height))
         
-        var rows = [Vector8](repeating: Vector8(repeating: 0, count: width),
-                             count: height)
-        
-        for (idx, el) in data.enumerated() {
-            let row = Int(idx / width)
-            let col = idx % width
-            
-            rows[row][col] = el
-        }
-        
-        self.rows = rows
+        self.underlyingVector = data
     }
     
     func imageRepresentation() -> UIImage? {
-        var data = Vector8(repeating: 0, count: width * height)
+        var data = self.underlyingVector
         
-        for (i, row) in rows.enumerated() {
-            for (j, intensity) in row.enumerated() {
-                data[i * width + j] = intensity
-            }
-        }
-        
-        let context = grayscale8BitContext(width: width,
-                                           height: height,
+        let context = grayscale8BitContext(width: size.width,
+                                           height: size.height,
                                            data: &data)
         
         if let image = context?.makeImage() {
@@ -91,5 +210,66 @@ public extension Matrix {
         }
         
         return nil
+    }
+}
+
+/*
+    Not sure if this is the best way of defining a method for Int and Double
+ */
+public extension MatrixProtocol where DT == Double {
+    static func * (left: Self, right: Self) -> Matrix<Double> {
+        let result =
+            multiplyDoubleMatrices(underlyingVectorA: left.underlyingVector,
+                                   underlyingVectorB: right.underlyingVector,
+                                   sizeA: left.size, sizeB: right.size)
+            
+        if let result = result {
+            return Matrix<DT>(vec: result.0, size: result.1)
+        }
+            
+        #if DEBUG
+            print("Size mismatch in Matrix multiplication, break in Matrix#*")
+        #endif
+        
+        return Matrix<DT>(vec: [],
+                              size: Size(height: 0, width: 0))
+    }
+    
+    func svd() -> SVD {
+        return singularValueDecomposition(underlyingVector: underlyingVector,
+                                          size: size)
+    }
+}
+
+public extension MatrixProtocol where DT == Int8 {
+    static func * (left: Self, right: Self) -> Matrix<Int8> {
+            let leftDoubleVector = left.underlyingVector.map { Double($0) }
+            let rightDoubleVector = right.underlyingVector.map { Double($0) }
+            
+            let result =
+                multiplyDoubleMatrices(underlyingVectorA: leftDoubleVector,
+                                       underlyingVectorB: rightDoubleVector,
+                                       sizeA: left.size, sizeB: right.size)
+            
+            if let result = result {
+                let integerVector = result.0.map() { Int8($0) }
+                
+                return Matrix<Int8>(vec: integerVector,
+                                    size: result.1)
+            }
+            
+            #if DEBUG
+                print("Size mismatch in Matrix multiplication, break in Matrix#*")
+            #endif
+            
+            return Matrix<Int8>(vec: [],
+                                size: Size(height: 0, width: 0))
+    }
+    
+    func svd() -> SVD {
+        let doubleUnderlying = underlyingVector.map() { Double($0) }
+        
+        return singularValueDecomposition(underlyingVector: doubleUnderlying,
+                                          size: size)
     }
 }
