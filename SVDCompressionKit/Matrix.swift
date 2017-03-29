@@ -42,9 +42,9 @@ private func multiplyDoubleMatrices(underlyingVectorA: Vector<Double>,
     let overlappingDimension = Int32(sizeA.width)
     let scalingFactor: Double = 1
     
-    let dimLeft = Int32(sizeA.height)
-    let dimRight = Int32(sizeB.height)
-    let dimResult = Int32(sizeA.height)
+    let dimLeft = Int32(sizeA.width)
+    let dimRight = Int32(sizeB.width)
+    let dimResult = Int32(sizeB.width)
     
     let resultLength = Int(height) * Int(width)
     var result: [Double] = [Double](repeating: 0, count: resultLength)
@@ -65,7 +65,6 @@ private func singularValueDecomposition(underlyingVector: Vector<Double>,
     var width = __CLPK_integer(size.width)
     var dimA = height
     var dimU = height
-    let dimΣ = height
     var dimVT = width
     
     // Data
@@ -96,23 +95,45 @@ private func singularValueDecomposition(underlyingVector: Vector<Double>,
         fatalError("The SVD algorithm failed to converge.")
     }
     
-    let matrixU = Matrix(vec: U,
-                         size: Size(height: Int(dimΣ), width: Int(dimU)))
-    let matrixΣ = Matrix(vec: Σ,
-                         size: Size(height: Int(dimVT), width: Int(dimΣ)))
-    let matrixVT = Matrix(vec: VT,
-                          size: Size(height: Int(dimVT), width: Int(dimVT)))
+    let sizeU = Size(height: size.height, width: size.height)
+    let sizeΣ = Size(height: size.height, width: size.width)
+    let sizeVT = Size(height: size.width, width: size.width)
+    
+    let rowMajorU = transpose(vector: U, size: sizeU.transpose())
+    let rowMajorVT = transpose(vector: VT, size: sizeVT.transpose())
+    
+    let matrixU = Matrix(vec: rowMajorU, size: sizeU)
+    let matrixΣ = Matrix(diagonal: Σ, size: sizeΣ)
+    let matrixVT = Matrix(vec: rowMajorVT, size: sizeVT)
     
     return (U: matrixU, Σ: matrixΣ, VT: matrixVT)
+}
+
+private func transpose(vector: Vector<Double>, size: Size) -> Vector<Double> {
+    let length = size.height * size.width
+    var columnMajor = Vector<Double>(repeating: 0, count: length)
+    
+    for j in 0..<size.height {
+        for i in 0..<size.width {
+            let newIndex = i * size.height + j
+            columnMajor[newIndex] = vector[j * size.width + i]
+        }
+    }
+    
+    return columnMajor
 }
 
 public struct Size {
     let height: Int
     let width: Int
     
-    init(height: Int, width: Int) {
+    public init(height: Int, width: Int) {
         self.height = height
         self.width = width
+    }
+    
+    public func transpose() -> Size {
+        return Size(height: width, width: height)
     }
 }
 
@@ -128,6 +149,7 @@ public protocol MatrixProtocol {
 public struct Matrix<T>: MatrixProtocol {
     public typealias DT = T
     
+    // Stored row-major!
     public var underlyingVector: Vector<T>
     public var size: Size
 
@@ -213,9 +235,6 @@ public extension MatrixProtocol where DT == Int8 {
     }
 }
 
-/*
-    Not sure if this is the best way of defining a method for Int and Double
- */
 public extension MatrixProtocol where DT == Double {
     static func * (left: Self, right: Self) -> Matrix<Double> {
         let result =
@@ -236,8 +255,29 @@ public extension MatrixProtocol where DT == Double {
     }
     
     func svd() -> SVD {
-        return singularValueDecomposition(underlyingVector: underlyingVector,
+        let colMajor = transpose(vector: underlyingVector, size: size)
+        return singularValueDecomposition(underlyingVector: colMajor,
                                           size: size)
+    }
+    
+    init(diagonal fromVector: Vector<DT>, size: Size) {
+        self.init()
+        
+        let diagonalCount = min(size.height, size.width)
+        var underlyingVector = [DT](repeating: DT(0),
+                                    count: size.height * size.width)
+        
+        for (idx, el) in fromVector[0..<diagonalCount].enumerated() {
+            underlyingVector[idx * size.width + idx] = el
+        }
+
+        self.underlyingVector = underlyingVector
+        self.size = size
+    }
+    
+    func integerRepresentation() -> Matrix<Int8> {
+        let intVector = underlyingVector.map() { Int8(round($0)) }
+        return Matrix<Int8>(vec: intVector, size: size)
     }
 }
 
@@ -268,8 +308,9 @@ public extension MatrixProtocol where DT == Int8 {
     
     func svd() -> SVD {
         let doubleUnderlying = underlyingVector.map() { Double($0) }
+        let colMajor = transpose(vector: doubleUnderlying, size: size)
         
-        return singularValueDecomposition(underlyingVector: doubleUnderlying,
+        return singularValueDecomposition(underlyingVector: colMajor,
                                           size: size)
     }
 }

@@ -15,8 +15,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
+//        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
+//        let svd = matrix.svd()
+//        
+//        var roundtrip = svd.U * svd.Σ * svd.VT
+        let matrix = Matrix<Int8>(vec: [1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0], size: Size(height: 4, width: 5))
+        print("Matrix:")
+        print(matrix)
+        
         let svd = matrix.svd()
+        print("U:")
+        print(svd.U)
+        print("Sigma:")
+        print(svd.Σ)
+        print("VT:")
+        print(svd.VT)
+        
+        var roundtrip = svd.U * svd.Σ * svd.VT
+        print("Roundtrip:")
+        print(roundtrip)
+
         
         return true
     }
@@ -28,6 +46,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
 

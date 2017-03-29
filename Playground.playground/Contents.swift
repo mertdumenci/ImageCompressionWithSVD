@@ -5,5 +5,9 @@ import SVDCompressionKit
 
 let image = #imageLiteral(resourceName: "diddy.jpg")
 
-var matrix = Matrix<Int8>(image: image)
-var roundTrip = matrix.imageRepresentation()
+let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
+let preVSD = matrix.imageRepresentation()
+
+let vsd = matrix.svd()
+
+let imaj = (vsd.U * vsd.Σ * vsd.VT).integerRepresentation().imageRepresentation()
