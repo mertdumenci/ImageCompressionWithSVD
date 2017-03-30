@@ -24,8 +24,7 @@ private func createImageContext(data: UnsafeMutableRawPointer, size: Size) -> CG
 
 // Swift bug? typealiasing the return type maximizes SourceKit CPU usage, gets
 // Xcode in an endless indexing loop
-public func vectorizeImage(image: UIImage)
-        -> (Vector<UInt8>, Vector<UInt8>, Vector<UInt8>) {
+public func extractMatrices(image: UIImage) -> (Matrix<UInt8>, Matrix<UInt8>, Matrix<UInt8>) {
     let width = Int(image.size.width)
     let height = Int(image.size.height)
     
@@ -50,8 +49,22 @@ public func vectorizeImage(image: UIImage)
         greenVector.append(green)
         blueVector.append(blue)
     }
+
+    let size = Size(height: height, width: width)
+    let redMatrix = Matrix(vec: redVector, size: size)
+    let greenMatrix = Matrix(vec: greenVector, size: size)
+    let blueMatrix = Matrix(vec: blueVector, size: size)
     
-    return (red: redVector, green: greenVector, blue: blueVector)
+    return (redMatrix, greenMatrix, blueMatrix)
+}
+
+public func compileImage(red: Matrix<UInt8>, green: Matrix<UInt8>,
+                         blue: Matrix<UInt8>) -> UIImage {
+    return compileImage(redVector: red.underlyingVector,
+                        greenVector: green.underlyingVector,
+                        blueVector: blue.underlyingVector,
+                        size: Size(height: Int(red.size.height),
+                                   width: Int(red.size.width)))
 }
 
 public func compileImage(redVector: Vector<UInt8>,
