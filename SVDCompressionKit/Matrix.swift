@@ -123,6 +123,20 @@ private func transpose(vector: Vector<Double>, size: Size) -> Vector<Double> {
     return columnMajor
 }
 
+public func trimZeroes(vector: Vector<Double>) -> Vector<Double> {
+    let sorted = vector.sorted()
+    var nzIdx = 0
+    
+    for (idx, el) in sorted.enumerated() {
+        if el != 0 {
+            nzIdx = idx
+            break
+        }
+    }
+    
+    return Vector<Double>(sorted[nzIdx..<sorted.count])
+}
+
 public struct Size {
     let height: Int
     let width: Int
@@ -263,7 +277,7 @@ public extension MatrixProtocol where DT == Double {
     init(diagonal fromVector: Vector<DT>, size: Size) {
         self.init()
         
-        let diagonalCount = min(size.height, size.width)
+        let diagonalCount = trimZeroes(vector: fromVector).count
         var underlyingVector = [DT](repeating: DT(0),
                                     count: size.height * size.width)
         
@@ -276,7 +290,24 @@ public extension MatrixProtocol where DT == Double {
     }
     
     func integerRepresentation() -> Matrix<Int8> {
-        let intVector = underlyingVector.map() { Int8(round($0)) }
+        let intVector = underlyingVector.map() { val -> Int8 in
+            let roundedVal = round(val)
+            
+            if roundedVal < Double(Int8.min) {
+                print(roundedVal)
+            }
+            
+            if roundedVal > Double(Int8.max) {
+                print(roundedVal)
+            }
+            
+            if roundedVal < 0 {
+                return Int8(max(roundedVal, Double(Int8.min)))
+            } else {
+                return Int8(min(roundedVal, Double(Int8.max)))
+            }
+        }
+        
         return Matrix<Int8>(vec: intVector, size: size)
     }
 }

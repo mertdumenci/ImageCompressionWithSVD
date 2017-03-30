@@ -15,26 +15,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-//        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
-//        let svd = matrix.svd()
-//        
-//        var roundtrip = svd.U * svd.Σ * svd.VT
-        let matrix = Matrix<Int8>(vec: [1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0], size: Size(height: 4, width: 5))
-        print("Matrix:")
-        print(matrix)
+        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
+        let SVD = matrix.svd()
         
-        let svd = matrix.svd()
-        print("U:")
-        print(svd.U)
-        print("Sigma:")
-        print(svd.Σ)
-        print("VT:")
-        print(svd.VT)
+        let U = SVD.U
+        let sigma = SVD.Σ
+        let VT = SVD.VT
         
-        var roundtrip = svd.U * svd.Σ * svd.VT
-        print("Roundtrip:")
-        print(roundtrip)
-
+        print(sigma)
+        
+        let trimmedSigma = trimZeroes(vector: sigma.underlyingVector).reversed()
+        let rank = trimmedSigma.count
+        
+        for singularValue in trimmedSigma {
+            singularValue
+        }
+        
+        let rankFactor = 0.1
+        let newRank = Int(round(Double(rank) * rankFactor))
+        
+        let newSigma = Vector<Double>(trimmedSigma.prefix(newRank))
+        let newSigmaMatrix = Matrix<Double>(diagonal: newSigma, size: sigma.size)
+        
+        for singularValue in newSigma {
+            singularValue
+        }
+        
+        let newImageMatrix = (U * newSigmaMatrix * VT)
+        
+        newImageMatrix.integerRepresentation().imageRepresentation()
         
         return true
     }
