@@ -15,36 +15,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
-        let SVD = matrix.svd()
-        
-        let U = SVD.U
-        let sigma = SVD.Σ
-        let VT = SVD.VT
-        
-        print(sigma)
-        
-        let trimmedSigma = trimZeroes(vector: sigma.underlyingVector).reversed()
-        let rank = trimmedSigma.count
-        
-        for singularValue in trimmedSigma {
-            singularValue
-        }
-        
-        let rankFactor = 0.1
-        let newRank = Int(round(Double(rank) * rankFactor))
-        
-        let newSigma = Vector<Double>(trimmedSigma.prefix(newRank))
-        let newSigmaMatrix = Matrix<Double>(diagonal: newSigma, size: sigma.size)
-        
-        for singularValue in newSigma {
-            singularValue
-        }
-        
-        let newImageMatrix = (U * newSigmaMatrix * VT)
-        
-        newImageMatrix.integerRepresentation().imageRepresentation()
-        
+//        let matrix = Matrix<Int8>(image: UIImage(named: "diddy.jpg")!)
+//        let SVD = matrix.svd()
+//        
+//        let U = SVD.U
+//        let sigma = SVD.Σ
+//        let VT = SVD.VT
+//        
+//        print(sigma)
+//        
+//        let trimmedSigma = trimZeroes(vector: sigma.underlyingVector).reversed()
+//        let rank = trimmedSigma.count
+//        
+//        for singularValue in trimmedSigma {
+//            singularValue
+//        }
+//        
+//        let rankFactor = 0.1
+//        let newRank = Int(round(Double(rank) * rankFactor))
+//        
+//        let newSigma = Vector<Double>(trimmedSigma.prefix(newRank))
+//        let newSigmaMatrix = Matrix<Double>(diagonal: newSigma, size: sigma.size)
+//        
+//        for singularValue in newSigma {
+//            singularValue
+//        }
+//        
+//        let newImageMatrix = (U * newSigmaMatrix * VT)
+//        
+//        newImageMatrix.integerRepresentation().imageRepresentation()
+//        
         return true
     }
 

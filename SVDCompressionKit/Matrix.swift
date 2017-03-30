@@ -196,15 +196,15 @@ public struct Matrix<T>: MatrixProtocol {
 
 extension Matrix: CustomStringConvertible {
     public var description: String {
-        var descriptionString = "\(size.height) * \(size.width)\n"
-        for row in rows {
-            let rowDescription = row.map() { String(describing: $0) }
-                                .joined(separator: " ")
-            
-            descriptionString += "|" + rowDescription + "|\n"
-        }
-        
-        return descriptionString
+        return "\(size.height) * \(size.width)\n"
+//        for row in rows {
+//            let rowDescription = row.map() { String(describing: $0) }
+//                                .joined(separator: " ")
+//            
+//            descriptionString += "|" + rowDescription + "|\n"
+//        }
+//        
+//        return descriptionString
     }
 }
 
@@ -212,7 +212,7 @@ extension Matrix: CustomStringConvertible {
     Loading a `Matrix` with the grayscale representation of an `UIImage`, and
     creating a greyscale `UIImage` representation from a `Matrix`.
  */
-public extension MatrixProtocol where DT == Int8 {
+public extension MatrixProtocol where DT == UInt8 {
     init(image: UIImage) {
         self.init()
         
@@ -221,7 +221,7 @@ public extension MatrixProtocol where DT == Int8 {
         size = Size(height: Int(image.size.height),
                     width: Int(image.size.width))
         
-        var data = Vector<Int8>(repeating: 0, count: size.height * size.width)
+        var data = Vector<UInt8>(repeating: 0, count: size.height * size.width)
         
         let context = grayscale8BitContext(width: size.width,
                                            height: size.height,
@@ -289,31 +289,23 @@ public extension MatrixProtocol where DT == Double {
         self.size = size
     }
     
-    func integerRepresentation() -> Matrix<Int8> {
-        let intVector = underlyingVector.map() { val -> Int8 in
+    func integerRepresentation() -> Matrix<UInt8> {
+        let intVector = underlyingVector.map() { val -> UInt8 in
             let roundedVal = round(val)
             
-            if roundedVal < Double(Int8.min) {
-                print(roundedVal)
-            }
-            
-            if roundedVal > Double(Int8.max) {
-                print(roundedVal)
-            }
-            
             if roundedVal < 0 {
-                return Int8(max(roundedVal, Double(Int8.min)))
+                return UInt8(max(roundedVal, Double(UInt8.min)))
             } else {
-                return Int8(min(roundedVal, Double(Int8.max)))
+                return UInt8(min(roundedVal, Double(UInt8.max)))
             }
         }
         
-        return Matrix<Int8>(vec: intVector, size: size)
+        return Matrix<UInt8>(vec: intVector, size: size)
     }
 }
 
-public extension MatrixProtocol where DT == Int8 {
-    static func * (left: Self, right: Self) -> Matrix<Int8> {
+public extension MatrixProtocol where DT == UInt8 {
+    static func * (left: Self, right: Self) -> Matrix<UInt8> {
             let leftDoubleVector = left.underlyingVector.map { Double($0) }
             let rightDoubleVector = right.underlyingVector.map { Double($0) }
             
@@ -323,9 +315,9 @@ public extension MatrixProtocol where DT == Int8 {
                                        sizeA: left.size, sizeB: right.size)
             
             if let result = result {
-                let integerVector = result.0.map() { Int8($0) }
+                let integerVector = result.0.map() { UInt8($0) }
                 
-                return Matrix<Int8>(vec: integerVector,
+                return Matrix<UInt8>(vec: integerVector,
                                     size: result.1)
             }
             
@@ -333,7 +325,7 @@ public extension MatrixProtocol where DT == Int8 {
                 print("Size mismatch in Matrix multiplication, break in Matrix#*")
             #endif
             
-            return Matrix<Int8>(vec: [],
+            return Matrix<UInt8>(vec: [],
                                 size: Size(height: 0, width: 0))
     }
     

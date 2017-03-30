@@ -5,14 +5,12 @@ import SVDCompressionKit
 
 let image = #imageLiteral(resourceName: "diddy.jpg")
 
-let matrix = Matrix<Int8>(image: image)
+let matrix = Matrix<UInt8>(image: image)
 let SVD = matrix.svd()
 
 let U = SVD.U
 let sigma = SVD.Σ
 let VT = SVD.VT
-
-print(sigma)
 
 let trimmedSigma = trimZeroes(vector: sigma.underlyingVector).reversed()
 let rank = trimmedSigma.count
@@ -21,7 +19,7 @@ for singularValue in trimmedSigma {
     singularValue
 }
 
-let rankFactor = 0.1
+let rankFactor = 0.03
 let newRank = Int(round(Double(rank) * rankFactor))
 
 let newSigma = Vector<Double>(trimmedSigma.prefix(newRank))
@@ -34,3 +32,19 @@ for singularValue in newSigma {
 let newImageMatrix = (U * newSigmaMatrix * VT)
 
 newImageMatrix.integerRepresentation().imageRepresentation()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
