@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		418F41891E8B655C00A1FE08 /* SVDCompressionKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		418F41901E8B656D00A1FE08 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418F418F1E8B656D00A1FE08 /* Matrix.swift */; };
+		41C0ED7A1E8D5FA400686AA2 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C0ED791E8D5FA400686AA2 /* ImageTools.swift */; };
 		41E240841E8C4C8F005D89AD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E240831E8C4C8F005D89AD /* AppDelegate.swift */; };
 		41E240861E8C4C8F005D89AD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E240851E8C4C8F005D89AD /* ViewController.swift */; };
 		41E240891E8C4C8F005D89AD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 41E240871E8C4C8F005D89AD /* Main.storyboard */; };
@@ -22,6 +23,7 @@
 		418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SVDCompressionKit.h; sourceTree = "<group>"; };
 		418F41881E8B655C00A1FE08 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		418F418F1E8B656D00A1FE08 /* Matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
+		41C0ED791E8D5FA400686AA2 /* ImageTools.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageTools.swift; sourceTree = "<group>"; };
 		41E240811E8C4C8F005D89AD /* NotAPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NotAPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E240831E8C4C8F005D89AD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		41E240851E8C4C8F005D89AD /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 			children = (
 				418F41871E8B655C00A1FE08 /* SVDCompressionKit.h */,
 				418F418F1E8B656D00A1FE08 /* Matrix.swift */,
+				41C0ED791E8D5FA400686AA2 /* ImageTools.swift */,
 				418F41881E8B655C00A1FE08 /* Info.plist */,
 			);
 			path = SVDCompressionKit;
@@ -206,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				418F41901E8B656D00A1FE08 /* Matrix.swift in Sources */,
+				41C0ED7A1E8D5FA400686AA2 /* ImageTools.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -430,6 +434,7 @@
 				41E240911E8C4C8F005D89AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

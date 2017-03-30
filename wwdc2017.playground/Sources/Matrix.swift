@@ -6,13 +6,26 @@
 //  Copyright © 2017 Mert Dümenci. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import Accelerate
 
 public typealias SVD = (U: Matrix<Double>,
                         Σ: Matrix<Double>,
                         VT: Matrix<Double>)
 public typealias Vector<T> = [T]
+
+private func grayscale8BitContext(width: Int, height: Int,
+                                  data: UnsafeMutableRawPointer)
+    -> CGContext? {
+    // Creates a 8-bit per pixel, grayscale image context
+    let grayColorSpace = CGColorSpaceCreateDeviceGray()
+    let context = CGContext(data: data, width: width,
+                            height: height, bitsPerComponent: 8,
+                            bytesPerRow: width, space: grayColorSpace,
+                            bitmapInfo: CGImageAlphaInfo.none.rawValue)
+    
+    return context
+}
 
 private func multiplyDoubleMatrices(underlyingVectorA: Vector<Double>,
                                     underlyingVectorB: Vector<Double>,
@@ -184,6 +197,55 @@ public struct Matrix<T>: MatrixProtocol {
 extension Matrix: CustomStringConvertible {
     public var description: String {
         return "\(size.height) * \(size.width)\n"
+//        for row in rows {
+//            let rowDescription = row.map() { String(describing: $0) }
+//                                .joined(separator: " ")
+//            
+//            descriptionString += "|" + rowDescription + "|\n"
+//        }
+//        
+//        return descriptionString
+    }
+}
+
+/*
+    Loading a `Matrix` with the grayscale representation of an `UIImage`, and
+    creating a greyscale `UIImage` representation from a `Matrix`.
+ */
+public extension MatrixProtocol where DT == UInt8 {
+    init(image: UIImage) {
+        self.init()
+        
+        let cgImage = image.cgImage!
+        
+        size = Size(height: Int(image.size.height),
+                    width: Int(image.size.width))
+        
+        var data = Vector<UInt8>(repeating: 0, count: size.height * size.width)
+        
+        let context = grayscale8BitContext(width: size.width,
+                                           height: size.height,
+                                           data: &data)
+        
+        context?.draw(cgImage, in: CGRect(x: 0, y: 0,
+                                          width: size.width,
+                                          height: size.height))
+        
+        self.underlyingVector = data
+    }
+    
+    func imageRepresentation() -> UIImage? {
+        var data = self.underlyingVector
+        
+        let context = grayscale8BitContext(width: size.width,
+                                           height: size.height,
+                                           data: &data)
+        
+        if let image = context?.makeImage() {
+            return UIImage(cgImage: image)
+        }
+        
+        return nil
     }
 }
 
