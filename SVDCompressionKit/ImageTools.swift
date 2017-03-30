@@ -9,12 +9,6 @@
 import Foundation
 import CoreGraphics
 
-enum PixelComponent {
-    case Red
-    case Green
-    case Blue
-}
-
 private func createImageContext(data: UnsafeMutableRawPointer, size: Size) -> CGContext {
     let width = size.width
     let height = size.height
@@ -85,4 +79,22 @@ public func compileImage(redVector: Vector<UInt8>,
     let image = context.makeImage()
     
     return UIImage(cgImage: image!)
+}
+
+public func downsizeImage(image: UIImage, width: Int) -> UIImage {
+    if (width > Int(image.size.height)) {
+        return image
+    }
+    
+    let computedHeight = CGFloat(width) * image.size.height / image.size.width
+    let computedSize = CGSize(width: CGFloat(width),
+                              height: computedHeight)
+    
+    UIGraphicsBeginImageContextWithOptions(computedSize, false, image.scale);
+    image.draw(in: CGRect(x: 0, y: 0, width: computedSize.width,
+                          height: computedSize.height))
+    let resizedImage = UIGraphicsGetImageFromCurrentImageContext()!
+    UIGraphicsEndImageContext()
+    
+    return resizedImage
 }
