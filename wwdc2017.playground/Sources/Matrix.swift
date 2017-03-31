@@ -46,6 +46,10 @@ private func multiplyDoubleMatrices(underlyingVectorA: Vector<Double>,
 
 private func singularValueDecomposition(underlyingVector: Vector<Double>,
                                         size: Size) -> SVD {
+    // I hate doing this, but there's no good way of hiding code from the
+    // main Playground unless we're writing a PlaygroundBook, which we're not
+    UI.setSideText(text: "Computing the SVD for the color matrices")
+    
     // Return all columns of U and all rows of V^T
     var jobz = "A".utf8CString[0]
     var height = __CLPK_integer(size.height)

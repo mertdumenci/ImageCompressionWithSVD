@@ -25,6 +25,10 @@ private func createImageContext(data: UnsafeMutableRawPointer, size: Size) -> CG
 // Swift bug? typealiasing the return type maximizes SourceKit CPU usage, gets
 // Xcode in an endless indexing loop
 public func extractMatrices(image: UIImage) -> (Matrix<UInt8>, Matrix<UInt8>, Matrix<UInt8>) {
+    // I hate doing this, but there's no good way of hiding code from the
+    // main Playground unless we're writing a PlaygroundBook, which we're not
+    UI.setSideText(text: "Computing color matrices")
+    
     let width = Int(image.size.width)
     let height = Int(image.size.height)
     
@@ -60,11 +64,19 @@ public func extractMatrices(image: UIImage) -> (Matrix<UInt8>, Matrix<UInt8>, Ma
 
 public func compileImage(red: Matrix<UInt8>, green: Matrix<UInt8>,
                          blue: Matrix<UInt8>) -> UIImage {
-    return compileImage(redVector: red.underlyingVector,
-                        greenVector: green.underlyingVector,
-                        blueVector: blue.underlyingVector,
-                        size: Size(height: Int(red.size.height),
-                                   width: Int(red.size.width)))
+    let retval = compileImage(redVector: red.underlyingVector,
+                              greenVector: green.underlyingVector,
+                              blueVector: blue.underlyingVector,
+                              size: Size(height: Int(red.size.height),
+                                         width: Int(red.size.width)))
+    
+    // I hate doing this, but there's no good way of hiding code from the
+    // main Playground unless we're writing a PlaygroundBook, which we're not
+    UI.setSideImage(image: retval)
+    UI.setSideText(text: "Compressed image.")
+    UI.done()
+    
+    return retval
 }
 
 public func compileImage(redVector: Vector<UInt8>,
@@ -95,7 +107,7 @@ public func compileImage(redVector: Vector<UInt8>,
 }
 
 public func downsizeImage(image: UIImage, width: Int) -> UIImage {
-    if (width > Int(image.size.height)) {
+    if (width > Int(image.size.width)) {
         return image
     }
     
@@ -108,6 +120,10 @@ public func downsizeImage(image: UIImage, width: Int) -> UIImage {
                           height: computedSize.height))
     let resizedImage = UIGraphicsGetImageFromCurrentImageContext()!
     UIGraphicsEndImageContext()
+    
+    // I hate doing this, but there's no good way of hiding code from the
+    // main Playground unless we're writing a PlaygroundBook, which we're not
+    UI.setSideImage(image: resizedImage)
     
     return resizedImage
 }
