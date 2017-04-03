@@ -128,7 +128,7 @@ DispatchQueue.global().async {
  We define the rank factor--this describes the new rank our compressed matrix `A` will have.
  Essentially the ratio of how many singular values we will retain from the original matrix.
 */
-    let factor = 0.2
+    let factor = 0.1
 /*:
  We extract the red, green and blue image matrices that we computed at the beginning, and
  run our rank reduction algorithm on them.
